@@ -7,6 +7,7 @@ class JenkinsJobManager {
 	String templateJobPrefix
 	String jobPrefix
 	String gitUrl
+	String gitKey
 	String jenkinsUrl
 	String createJobInView
 	String jenkinsUser
@@ -25,8 +26,8 @@ class JenkinsJobManager {
 	String templateReleaseSuffix = "release"
 
 	def branchSuffixMatch = [(templateFeatureSuffix): featureSuffix,
-							 (templateHotfixSuffix) : hotfixSuffix,
-							 (templateReleaseSuffix): releaseSuffix]
+	(templateHotfixSuffix) : hotfixSuffix,
+	(templateReleaseSuffix): releaseSuffix]
 
 	JenkinsApi jenkinsApi
 	GitApi gitApi
@@ -143,22 +144,22 @@ class JenkinsJobManager {
 			if (dryRun) {
 				println "DRY RUN! Not executing any POST commands to Jenkins, only GET commands"
 				this.jenkinsApi = new JenkinsApiReadOnly(jenkinsServerUrl: jenkinsUrl)
-			} else {
-				this.jenkinsApi = new JenkinsApi(jenkinsServerUrl: jenkinsUrl)
+				} else {
+					this.jenkinsApi = new JenkinsApi(jenkinsServerUrl: jenkinsUrl)
+				}
+
+				if (jenkinsUser || jenkinsPassword) this.jenkinsApi.addBasicAuth(jenkinsUser, jenkinsPassword)
 			}
 
-			if (jenkinsUser || jenkinsPassword) this.jenkinsApi.addBasicAuth(jenkinsUser, jenkinsPassword)
+			return this.jenkinsApi
 		}
 
-		return this.jenkinsApi
-	}
+		GitApi initGitApi() {
+			if (!gitApi) {
+				assert gitUrl != null
+				this.gitApi = new GitApi(gitUrl: gitUrl)
+			}
 
-	GitApi initGitApi() {
-		if (!gitApi) {
-			assert gitUrl != null
-			this.gitApi = new GitApi(gitUrl: gitUrl)
+			return this.gitApi
 		}
-
-		return this.gitApi
 	}
-}
