@@ -5,6 +5,7 @@ import java.util.regex.Pattern
 class GitApi {
 
 	String gitUrl
+	String gitKey
 
 	public List<String> getBranchNames() {
 		String command = "gitgroovy -i ${gitKey} git ls-remote --heads ${gitUrl}"
