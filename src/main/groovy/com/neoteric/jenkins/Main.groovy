@@ -3,19 +3,20 @@ package com.neoteric.jenkins
 
 /*
 Bootstrap class that parses command line arguments, or system properties passed in by jenkins, and starts the jenkins-build-per-branch sync process
- */
+*/
 class Main {
     public static final Map<String, Map<String, Object>> opts = [
-            h: [longOpt: 'help', required: false, args: 0, argName: 'help', description: "Print usage information - gradle flag -Dhelp=true"],
-            j: [longOpt: 'jenkins-url', required: true, args: 1, argName: 'jenkinsUrl', description: "Jenkins URL - gradle flag -DjenkinsUrl=<jenkinsUrl>"],
-            u: [longOpt: 'git-url',  required: true, args: 1, argName: 'gitUrl', description: "Git Repository URL - gradle flag -DgitUrl=<gitUrl>"],
-            p: [longOpt: 'job-prefix', required: true, args: 1, argName: 'jobPrefix', description: "Job Prefix, - gradle flag -DjobPrefix=<jobPrefix>"],
-            a: [longOpt: 'template-job-prefix', required: true, args: 1, argName: 'templateJobPrefix', description: "Template Job Prefix, - gradle flag -DtemplatejobPrefix=<templateJobPrefix>"],
-            d: [longOpt: 'dry-run', required: false, args: 0, argName: 'dryRun', description:  "Dry run, don't actually modify, create, or delete any jobs, just print out what would happen - gradle flag: -DdryRun=true"],
-            i: [longOpt: 'create-job-in-view', required: false, args: 1, argName: 'createJobInView', description: "Create new job in specified view. When using this suppress view creation as well (-DnoViews=true) - gradle flag -DcreateInView=nestedView/view"],
-            k: [longOpt: 'no-delete', required: false, args: 0, argName: 'noDelete', description: "Do not delete (keep) branches and views - gradle flag -DnoDelete=true"],
-            usr: [longOpt: 'jenkins-user',  required: false, args: 1, argName: 'jenkinsUser', description: "Jenkins username - gradle flag -DjenkinsUser=<jenkinsUser>"],
-            pwd: [longOpt: 'jenkins-password',  required: false, args: 1, argName: 'jenkinsPassword', description: "Jenkins password - gradle flag -DjenkinsPassword=<jenkinsPassword>"]
+    h: [longOpt: 'help', required: false, args: 0, argName: 'help', description: "Print usage information - gradle flag -Dhelp=true"],
+    j: [longOpt: 'jenkins-url', required: true, args: 1, argName: 'jenkinsUrl', description: "Jenkins URL - gradle flag -DjenkinsUrl=<jenkinsUrl>"],
+    u: [longOpt: 'git-url',  required: true, args: 1, argName: 'gitUrl', description: "Git Repository URL - gradle flag -DgitUrl=<gitUrl>"],
+    key: [longOpt: 'git-key', required: false, args: 1, argname: 'gitKey', description: "Git Repository SSH Key - gradle flag -DgitKey=<gitKey>"],
+    p: [longOpt: 'job-prefix', required: true, args: 1, argName: 'jobPrefix', description: "Job Prefix, - gradle flag -DjobPrefix=<jobPrefix>"],
+    a: [longOpt: 'template-job-prefix', required: true, args: 1, argName: 'templateJobPrefix', description: "Template Job Prefix, - gradle flag -DtemplatejobPrefix=<templateJobPrefix>"],
+    d: [longOpt: 'dry-run', required: false, args: 0, argName: 'dryRun', description:  "Dry run, don't actually modify, create, or delete any jobs, just print out what would happen - gradle flag: -DdryRun=true"],
+    i: [longOpt: 'create-job-in-view', required: false, args: 1, argName: 'createJobInView', description: "Create new job in specified view. When using this suppress view creation as well (-DnoViews=true) - gradle flag -DcreateInView=nestedView/view"],
+    k: [longOpt: 'no-delete', required: false, args: 0, argName: 'noDelete', description: "Do not delete (keep) branches and views - gradle flag -DnoDelete=true"],
+    usr: [longOpt: 'jenkins-user',  required: false, args: 1, argName: 'jenkinsUser', description: "Jenkins username - gradle flag -DjenkinsUser=<jenkinsUser>"],
+    pwd: [longOpt: 'jenkins-password',  required: false, args: 1, argName: 'jenkinsPassword', description: "Jenkins password - gradle flag -DjenkinsPassword=<jenkinsPassword>"]
     ]
 
     public static void main(String[] args) {
@@ -61,30 +62,30 @@ class Main {
         opts.each { String shortOpt, Map<String, Object> optMap ->
             if (optMap.args) {
                 cli."$shortOpt"(longOpt: optMap.longOpt, args: optMap.args, argName: optMap.argName, optMap.description)
-            } else {
-                cli."$shortOpt"(longOpt: optMap.longOpt, optMap.description)
+                } else {
+                    cli."$shortOpt"(longOpt: optMap.longOpt, optMap.description)
+                }
             }
+            return cli
         }
-        return cli
-    }
 
-    public static showConfiguration(Map<String, String> argsMap) {
-        println "==============================================================="
-        argsMap.each { k, v -> println " $k: ${formatValue(k, v)}" }
-        println "==============================================================="
-    }
+        public static showConfiguration(Map<String, String> argsMap) {
+            println "==============================================================="
+            argsMap.each { k, v -> println " $k: ${formatValue(k, v)}" }
+            println "==============================================================="
+        }
 
-    public static formatValue(String key, String value) {
-        return (key == "jenkinsPassword") ? "********" : value
-    }
+        public static formatValue(String key, String value) {
+            return (key == "jenkinsPassword") ? "********" : value
+        }
 
-    public static Map<String, String> mergeSystemPropertyOptions(OptionAccessor commandLineOptions) {
-        Map <String, String> mergedArgs = [:]
-        opts.each { String shortOpt, Map<String, String> optMap ->
-            if (optMap.argName) {
-                mergedArgs[optMap.argName] = commandLineOptions."$shortOpt" ?: System.getProperty(optMap.argName)
+        public static Map<String, String> mergeSystemPropertyOptions(OptionAccessor commandLineOptions) {
+            Map <String, String> mergedArgs = [:]
+            opts.each { String shortOpt, Map<String, String> optMap ->
+                if (optMap.argName) {
+                    mergedArgs[optMap.argName] = commandLineOptions."$shortOpt" ?: System.getProperty(optMap.argName)
+                }
             }
+            return mergedArgs.findAll { k, v -> v }
         }
-        return mergedArgs.findAll { k, v -> v }
     }
-}
