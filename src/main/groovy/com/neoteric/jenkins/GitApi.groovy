@@ -7,7 +7,7 @@ class GitApi {
 	String gitUrl
 
 	public List<String> getBranchNames() {
-		String command = "git ls-remote --heads ${gitUrl}"
+		String command = "gitgroovy -i ${gitKey} git ls-remote --heads ${gitUrl}"
 		List<String> branchNames = []
 
 		eachResultLine(command) { String line ->
@@ -48,12 +48,12 @@ class GitApi {
 			gitOutput.eachLine { String line ->
 				closure(line)
 			}
-		} else {
-			String errorText = process.errorStream.text?.trim()
-			println "error executing command: $command"
-			println errorText
-			throw new Exception("Error executing command: $command -> $errorText")
+			} else {
+				String errorText = process.errorStream.text?.trim()
+				println "error executing command: $command"
+				println errorText
+				throw new Exception("Error executing command: $command -> $errorText")
+			}
 		}
-	}
 
-}
+	}
